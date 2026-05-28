@@ -50,6 +50,14 @@ def parsear_argumentos():
     return parser.parse_args()
 
 
+# =========================================
+# lectura del archivo fasta y guardado de secuencias en listas de tuplas (encabezado, secuencia)
+# =========================================
+# =========================================
+# Responsabilidad: Leer secuencias desde archivo fasta y almacenarlas en una lista de tuplas (encabezado, secuencia)
+# Entrada: archivo
+# Salida: lista de tuplas de las secuencias
+# =========================================
 def leer_fasta(ruta):
     """Leer secuencias desde un archivo FASTA.
 
@@ -86,6 +94,14 @@ def leer_fasta(ruta):
     return secuencias
 
 
+# =========================================
+# Cálculo de contenido de gc (secuencia)
+# =========================================
+# =========================================
+# Responsabilidad: calcular contenido gc de una secuencia dada
+# Entrada: secuencia
+# Salida: contenido gc
+# =========================================
 def calcular_gc(secuencia):
     """Calcular contenido GC de una secuencia de ADN.
 
@@ -105,6 +121,14 @@ def calcular_gc(secuencia):
     return gc_content
 
 
+# =========================================
+# Cálculo de estadísticas para tuplas (encabezado, secuencia)
+# =========================================
+# =========================================
+# Responsabilidad: calcular estadísticas para una lista de tuplas (encabezado, secuencia)
+# Entrada: lista de tuplas (encabezado, secuencia)
+# Salida: lista de tuplas con estadísticas
+# =========================================
 def calcular_estadisticas(secuencias):
     """Calcular estadísticas de una lista de secuencias FASTA.
 
@@ -124,44 +148,46 @@ def calcular_estadisticas(secuencias):
     return estadisticas
 
 
+# =========================================
+# FILTROS para las estadísticas de las secuencias
+# =========================================
+# =========================================
+# Responsabilidad: decidir si una secuencia debe conservarse según los filtros indicados por el usuario
+# Entrada: estadísticas de una secuencia y argumentos de los filtros
+# Salida: booleano indicando si la secuencia pasa los filtros o no
+# =========================================
 def pasa_filtros(estadisticas, args):
-    """Determinar si una secuencia pasa los filtros del usuario.
-
-    Args:
-        estadisticas (tuple[str, int, float]): Estadísticas de una secuencia
-            en forma (encabezado, longitud, contenido_gc).
-        args (argparse.Namespace): Argumentos de filtro.
-
-    Returns:
-        bool: True si la secuencia pasa los filtros.
-    """
-    _, longitud, gc_content = estadisticas
-
-    if args.min_len > 0 and longitud < args.min_len:
+    if args.min_len > 0 and estadisticas[1] < args.min_len:
         return False
-    if args.max_len > 0 and longitud > args.max_len:
+    if args.max_len > 0 and estadisticas[1] > args.max_len:
         return False
-    if args.min_gc > 0 and gc_content < args.min_gc:
+    if args.min_gc > 0 and estadisticas[2] < args.min_gc:
         return False
-    if args.max_gc > 0 and gc_content > args.max_gc:
+    if args.max_gc > 0 and estadisticas[2] > args.max_gc:
         return False
 
-    return True
+    return True  # si todas cumplen con false, entonces pasa los filtros
+
+
+# =========================================
+# Escribir resultados en un archivo TSV
+# =========================================
+# =========================================
+# Responsabilidad: escribir resultados en un archivo TSV con encabezados y estadísticas de las secuencias que pasaron los filtros
+# Entrada: estadísticas de las secuencias que pasaron los filtros y ruta del archivo de salida
+# Salida: archivo TSV con los resultados
+# =========================================
 
 
 def escribir_resultados(stats, ruta):
-    """Escribir resultados en un archivo TSV.
-
-    Args:
-        stats (list[tuple[str, int, float]]): Estadísticas de las secuencias filtradas.
-        ruta (str): Ruta del archivo TSV de salida.
-    """
+    ##Esta función escribirá el archivo final en formato TSV.
+    # Debe incluir una primera línea con los nombres de las columnas
     with open(ruta, "w") as archivo:
-        archivo.write("encabezado	longitud	contenido_gc
-")
-        for encabezado, longitud, gc_content in stats:
-            archivo.write(f"{encabezado}	{longitud}	{gc_content:.4f}
-")
+        archivo.write("Encabezado\tLongitud\tGC_Content\n")  # Escribir encabezado
+        for estad in stats:
+            archivo.write(
+                f"{estad[0]}\t{estad[1]}\t{estad[2]:.2f}\n"
+            )  # Escribir cada estadística
 
 
 def main():
